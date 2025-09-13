@@ -16,7 +16,7 @@ class Task(ABC):
         assert len(self.requirements) != 0
     
     def check_pass(self):
-        fail_result = f"🔴 Task Failed! You got {len(self.failed)-len(self.requirements)} out of {len(self.requirements)}.\nYou Failed on:{[key+".\n" for key in self.failed.keys()]}"
+        fail_result = f"🔴 Task Failed! You got {len(self.requirements)-len(self.failed)} out of {len(self.requirements)}.\nYou Failed on:\n{[key+".\n" for key in self.failed.keys()]}"
         success_result = f"🟩 Task Completed successfully! You got {len(self.failed)-len(self.requirements)} out of {len(self.requirements)}"
         print(success_result if len(self.failed) == 0 else fail_result)
 
