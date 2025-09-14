@@ -282,6 +282,114 @@ class Task03(Task):
             print(f"🔴 Failed: The target vector 'y' is not correct. It should be a Pandas Series of the 'Survived' column. Error: {e}")
 
 
+class Task04(Task):
+    requirements = [
+        "Loaded the dataset",
+        "Handled missing bedroom values",
+        "Performed one-hot encoding",
+        "Created feature matrix X",
+        "Created target vector y",
+        "Split the data into training and testing sets",
+        "Trained the Linear Regression model",
+        "Calculated the Mean Absolute Error"
+    ]
+
+    def check_data_loaded(self, df):
+        try:
+            import pandas as pd
+            assert isinstance(df, pd.DataFrame)
+            assert df.shape == (20640, 10)
+            assert 'median_house_value' in df.columns
+            self.failed.pop(self.requirements[0], None)
+            print("🟩 Passed: Loaded the California Housing dataset successfully.")
+        except:
+            self.failed[self.requirements[0]] = False
+            print("🔴 Failed: The DataFrame does not seem to be loaded correctly. Ensure you use pd.read_csv('california_housing.csv').")
+
+    def check_bedrooms_filled(self, df):
+        try:
+            assert not df['total_bedrooms'].isnull().any(), "There are still missing values in 'total_bedrooms'."
+            assert 455 < df['total_bedrooms'].mean() < 465, "The mean of the 'total_bedrooms' column seems incorrect. Did you use the correct mean after removing outliers to fill the NaNs?"
+            self.failed.pop(self.requirements[1], None)
+            print("🟩 Passed: Missing 'total_bedrooms' values handled correctly.")
+        except Exception as e:
+            self.failed[self.requirements[1]] = False
+            print(f"🔴 Failed: The missing values in 'total_bedrooms' were not handled correctly. {e}")
+
+    def check_one_hot_encoding(self, df):
+        try:
+            expected_ohe_cols = ['<1H OCEAN', 'INLAND', 'ISLAND', 'NEAR BAY', 'NEAR OCEAN']
+            assert 'ocean_proximity' not in df.columns, "The original 'ocean_proximity' column should be removed."
+            assert all([col in df.columns for col in expected_ohe_cols]), "One or more one-hot encoded columns are missing."
+            self.failed.pop(self.requirements[2], None)
+            print("🟩 Passed: One-hot encoding performed successfully.")
+        except Exception as e:
+            self.failed[self.requirements[2]] = False
+            print(f"🔴 Failed: The one-hot encoding step was not performed correctly. {e}")
+            
+    def check_X_creation(self, X):
+        try:
+            import pandas as pd
+            assert isinstance(X, pd.DataFrame)
+            assert 'median_house_value' not in X.columns, "The target variable 'median_house_value' should not be in X."
+            assert X.shape[1] == 13, f"X should have 13 feature columns, but it has {X.shape[1]}."
+            self.failed.pop(self.requirements[3], None)
+            print("🟩 Passed: Feature matrix 'X' created successfully.")
+        except Exception as e:
+            self.failed[self.requirements[3]] = False
+            print(f"🔴 Failed: The feature matrix 'X' is not correct. {e}")
+
+    def check_y_creation(self, y):
+        try:
+            import pandas as pd
+            assert isinstance(y, pd.Series)
+            assert y.name == 'median_house_value', "The target vector y should be the 'median_house_value' Series."
+            assert y.shape == (20640,), f"y has an incorrect shape: {y.shape}"
+            self.failed.pop(self.requirements[4], None)
+            print("🟩 Passed: Target vector 'y' created successfully.")
+        except Exception as e:
+            self.failed[self.requirements[4]] = False
+            print(f"🔴 Failed: The target vector 'y' is not correct. {e}")
+
+    def check_data_split(self, X_train, X_test, y_train, y_test):
+        try:
+            assert X_train.shape == (16512, 13), f"X_train has incorrect shape: {X_train.shape}"
+            assert X_test.shape == (4128, 13), f"X_test has incorrect shape: {X_test.shape}"
+            assert y_train.shape == (16512,), f"y_train has incorrect shape: {y_train.shape}"
+            assert y_test.shape == (4128,), f"y_test has incorrect shape: {y_test.shape}"
+            self.failed.pop(self.requirements[5], None)
+            print("🟩 Passed: Data split into training and testing sets successfully.")
+        except Exception as e:
+            self.failed[self.requirements[5]] = False
+            print(f"🔴 Failed: The data split is incorrect. Ensure you used test_size=0.2 and the correct variable order. {e}")
+
+    def check_model_trained(self, model):
+        try:
+            from sklearn.linear_model import LinearRegression
+            from sklearn.exceptions import NotFittedError
+            assert isinstance(model, LinearRegression)
+            # Check if the model is fitted by accessing an attribute that only exists after fitting
+            model.predict([[0]*13])
+            self.failed.pop(self.requirements[6], None)
+            print("🟩 Passed: Linear Regression model trained successfully.")
+        except NotFittedError:
+            self.failed[self.requirements[6]] = True
+            print("🔴 Failed: The model has been instantiated but not trained. Remember to call the .fit() method.")
+        except Exception as e:
+            self.failed[self.requirements[6]] = True
+            print(f"🔴 Failed: There was an issue with the model training. {e}")
+
+    def check_mae(self, mae_score):
+        try:
+            assert 45000 < mae_score < 55000, f"The MAE score ({mae_score}) is outside the expected range. Check your data preparation and model training steps."
+            self.failed.pop(self.requirements[7], None)
+            print(f"🟩 Passed: MAE calculated successfully. Your model is, on average, off by ~${mae_score:,.2f}.")
+        except:
+            self.failed[self.requirements[7]] = False
+            print("🔴 Failed: The MAE calculation is incorrect or the value is unexpected. Ensure you are comparing y_test and your predictions.")
+
+
 task01 = Task01()
 task02 = Task02()
 task03 = Task03()
+task04 = Task04()
