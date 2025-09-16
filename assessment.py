@@ -389,7 +389,110 @@ class Task04(Task):
             print("🔴 Failed: The MAE calculation is incorrect or the value is unexpected. Ensure you are comparing y_test and your predictions.")
 
 
+class Task05(Task):
+    requirements = [
+        "Loaded and cleaned the data",
+        "Created feature matrix X and target vector y",
+        "Split the data into training and testing sets",
+        "Trained the Logistic Regression model",
+        "Calculated Logistic Regression accuracy",
+        "Trained the K-Nearest Neighbors model",
+        "Calculated K-Nearest Neighbors accuracy"
+    ]
+
+    def check_data_cleaned(self, df):
+        try:
+            import pandas as pd
+            assert isinstance(df, pd.DataFrame)
+            assert df.shape[0] == 889, "The number of rows is incorrect. Did you drop the rows with missing 'Embarked' values?"
+            assert df.shape[1] == 11, "The number of columns is incorrect after cleaning and one-hot encoding."
+            assert 'PassengerId' not in df.columns, "The 'PassengerId' column should be dropped."
+            assert not df.isnull().values.any(), "There are still missing values in the DataFrame."
+            self.failed.pop(self.requirements[0], None)
+            print("🟩 Passed: Data loaded and cleaned successfully.")
+        except Exception as e:
+            self.failed[self.requirements[0]] = False
+            print(f"🔴 Failed: The data cleaning process was not completed correctly. {e}")
+
+    def check_X_y_creation(self, X, y):
+        try:
+            import pandas as pd
+            assert isinstance(X, pd.DataFrame)
+            assert isinstance(y, pd.Series)
+            assert 'Survived' not in X.columns, "The target variable 'Survived' should not be in X."
+            assert X.shape == (889, 10), f"X has an incorrect shape: {X.shape}. It should be (889, 10)."
+            assert y.shape == (889,), f"y has an incorrect shape: {y.shape}."
+            assert y.name == 'Survived', "The target vector y should be the 'Survived' Series."
+            self.failed.pop(self.requirements[1], None)
+            print("🟩 Passed: Feature matrix 'X' and target vector 'y' created successfully.")
+        except Exception as e:
+            self.failed[self.requirements[1]] = False
+            print(f"🔴 Failed: The creation of X and y is incorrect. {e}")
+
+    def check_data_split(self, X_train, X_test, y_train, y_test):
+        try:
+            assert X_train.shape == (711, 10), f"X_train has incorrect shape: {X_train.shape}"
+            assert X_test.shape == (178, 10), f"X_test has incorrect shape: {X_test.shape}"
+            assert y_train.shape == (711,), f"y_train has incorrect shape: {y_train.shape}"
+            assert y_test.shape == (178,), f"y_test has incorrect shape: {y_test.shape}"
+            self.failed.pop(self.requirements[2], None)
+            print("🟩 Passed: Data split into training and testing sets successfully.")
+        except Exception as e:
+            self.failed[self.requirements[2]] = False
+            print(f"🔴 Failed: The data split is incorrect. Ensure you used test_size=0.2 and random_state=42. {e}")
+
+    def check_log_reg_trained(self, model):
+        try:
+            from sklearn.linear_model import LogisticRegression
+            from sklearn.exceptions import NotFittedError
+            assert isinstance(model, LogisticRegression)
+            model.predict([[0]*10]) # Check if fitted
+            self.failed.pop(self.requirements[3], None)
+            print("🟩 Passed: Logistic Regression model trained successfully.")
+        except NotFittedError:
+            self.failed[self.requirements[3]] = True
+            print("🔴 Failed: The Logistic Regression model has been instantiated but not trained. Remember to call .fit().")
+        except Exception as e:
+            self.failed[self.requirements[3]] = True
+            print(f"🔴 Failed: There was an issue with the Logistic Regression model training. {e}")
+
+    def check_log_reg_accuracy(self, accuracy):
+        try:
+            assert 0.75 < accuracy < 0.85, f"The accuracy score ({accuracy:.2%}) is outside the expected range (75-85%)."
+            self.failed.pop(self.requirements[4], None)
+            print(f"🟩 Passed: Logistic Regression accuracy calculated successfully. Accuracy: {accuracy:.2%}")
+        except Exception as e:
+            self.failed[self.requirements[4]] = False
+            print(f"🔴 Failed: The accuracy score calculation for Logistic Regression seems incorrect. {e}")
+
+    def check_knn_trained(self, model):
+        try:
+            from sklearn.neighbors import KNeighborsClassifier
+            from sklearn.exceptions import NotFittedError
+            assert isinstance(model, KNeighborsClassifier)
+            assert model.n_neighbors == 5, "The number of neighbors (K) should be set to 5."
+            model.predict([[0]*10]) # Check if fitted
+            self.failed.pop(self.requirements[5], None)
+            print("🟩 Passed: K-Nearest Neighbors model trained successfully.")
+        except NotFittedError:
+            self.failed[self.requirements[5]] = True
+            print("🔴 Failed: The KNN model has been instantiated but not trained. Remember to call .fit().")
+        except Exception as e:
+            self.failed[self.requirements[5]] = True
+            print(f"🔴 Failed: There was an issue with the KNN model training. {e}")
+
+    def check_knn_accuracy(self, accuracy):
+        try:
+            assert 0.65 < accuracy < 0.75, f"The accuracy score ({accuracy:.2%}) is outside the expected range (65-75%)."
+            self.failed.pop(self.requirements[6], None)
+            print(f"🟩 Passed: KNN accuracy calculated successfully. Accuracy: {accuracy:.2%}")
+        except Exception as e:
+            self.failed[self.requirements[6]] = False
+            print(f"🔴 Failed: The accuracy score calculation for KNN seems incorrect. {e}")
+
+
 task01 = Task01()
 task02 = Task02()
 task03 = Task03()
 task04 = Task04()
+task05 = Task05()
